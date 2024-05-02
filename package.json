@@ -1,0 +1,41 @@
+{
+  "name": "@podium/http-client",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "The HTTP client used for all HTTP requests in Podium",
+  "main": "lib/http-client.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node --test",
+    "bench": "PORT=3042 concurrently -k -s first npm:bench:server npm:bench:run",
+    "bench:server": "node benchmarks/server.js",
+    "prebench:run": "node benchmarks/wait.js",
+    "bench:run": "CONNECTIONS=1 node benchmarks/benchmark.js; CONNECTIONS=50 node benchmarks/benchmark.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/podium-lib/http-client.git"
+  },
+  "author": "Trygve Lie",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/podium-lib/http-client/issues"
+  },
+  "homepage": "https://github.com/podium-lib/http-client#readme",
+  "dependencies": {
+    "abslog": "2.4.4",
+    "@metrics/client": "2.5.2",
+    "http-errors": "2.0.0",
+    "opossum": "8.1.4",
+    "undici": "6.15.0"
+  },
+  "devDependencies": {
+    "table": "6.8.2",
+    "concurrently": "8.2.2",
+    "cronometro": "1.1.5",
+    "wait-on": "7.2.0"
+  }
+}
