@@ -1,0 +1,4 @@
+{
+    "extends": "@podium/typescript-config/test.json",
+    "include": ["./tests/**/*.js"]
+}
