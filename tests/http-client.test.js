@@ -2,11 +2,19 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 
-import PodiumHttpClient from '../lib/http-client.js';
+import HttpClient from '../lib/http-client.js';
 
 let httpServer,
     host = 'localhost',
     port = 3003;
+
+async function beforeEach() {
+    httpServer = http.createServer(async (request, response) => {
+        response.writeHead(200);
+        response.end();
+    });
+    httpServer.listen(port, host, () => Promise.resolve());
+}
 
 async function afterEach(client) {
     await client.close();
@@ -14,18 +22,12 @@ async function afterEach(client) {
 }
 
 test('http-client - basics', async (t) => {
-    t.beforeEach(async function () {
-        httpServer = http.createServer(async (request, response) => {
-            response.writeHead(200);
-            response.end();
-        });
-        httpServer.listen(port, host, () => Promise.resolve());
-    });
     await t.test(
         'http-client: returns 200 response when given valid input',
         async () => {
+            await beforeEach();
             const url = `http://${host}:${port}`;
-            const client = new PodiumHttpClient();
+            const client = new HttpClient();
             const response = await client.request({
                 path: '/',
                 origin: url,
@@ -37,8 +39,9 @@ test('http-client - basics', async (t) => {
     );
 
     await t.test('does not cause havoc with built in fetch', async () => {
+        await beforeEach();
         const url = `http://${host}:${port}`;
-        const client = new PodiumHttpClient();
+        const client = new HttpClient();
         await fetch(url);
         const response = await client.request({
             path: '/',
@@ -51,9 +54,10 @@ test('http-client - basics', async (t) => {
         await afterEach(client);
     });
 
-    test.skip('http-client: should not invalid port input', async () => {
+    await test.skip('http-client: should not invalid port input', async () => {
+        await beforeEach();
         const url = `http://${host}:3013`;
-        const client = new PodiumHttpClient();
+        const client = new HttpClient();
         await client.request({
             path: '/',
             origin: url,
@@ -65,13 +69,15 @@ test('http-client - basics', async (t) => {
             method: 'GET',
         });
         assert.strictEqual(response.statusCode, 200);
+        await afterEach(client);
     });
 });
 
 test.skip('http-client circuit breaker behaviour', async (t) => {
     await t.test('closes on failure threshold', async () => {
+        await beforeEach();
         const url = `http://${host}:3014`;
-        const client = new PodiumHttpClient({ threshold: 2 });
+        const client = new HttpClient({ threshold: 2 });
         await client.request({
             path: '/',
             origin: url,
