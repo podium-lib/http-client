@@ -9,8 +9,6 @@ let httpServer,
     host = 'localhost',
     port = 3003;
 
-const url = `http://${host}:${port}`;
-
 function beforeEach() {
     httpServer = http.createServer(async (request, response) => {
         response.writeHead(200);
@@ -19,15 +17,14 @@ function beforeEach() {
     httpServer.listen(port, host);
 }
 
-function closeServer() {
+function closeServer(s) {
     return new Promise((resolve) => {
-        httpServer.close(resolve);
-        console.log('Closed');
+        s.close(resolve);
     });
 }
-async function afterEach(client) {
+async function afterEach(client, server = httpServer) {
     await client.close();
-    await closeServer();
+    await closeServer(server);
 }
 
 async function queryUrl({
@@ -46,8 +43,13 @@ async function queryUrl({
     }
 }
 await test('http-client - basics', async (t) => {
+    const url = `http://${host}:2001`;
+    const server = http.createServer(async (request, response) => {
+        response.writeHead(200);
+        response.end();
+    });
+    server.listen(2001, host);
     await t.test('returns 200 response when given valid input', async () => {
-        beforeEach();
         const client = new HttpClient();
         const response = await client.request({
             path: '/',
@@ -55,38 +57,66 @@ await test('http-client - basics', async (t) => {
             method: 'GET',
         });
         assert.strictEqual(response.statusCode, 200);
-        await afterEach(client);
+        await client.close();
     });
 
-    // await t.test('does not cause havoc with built in fetch', async () => {
-    //     beforeEach();
-    //     const client = new HttpClient();
-    //     await fetch(url);
-    //     const response = await client.request({
-    //         path: '/',
-    //         origin: url,
-    //         method: 'GET',
-    //     });
-    //     assert.strictEqual(response.statusCode, 200);
-    //     await client.close();
-    //     await fetch(url);
-    //     await afterEach(client);
-    // });
-    await t.test('can pass in an abort controller', async () => {
-        beforeEach();
-        const abortController = new AbortController();
-
+    await t.test('does not cause havoc with built in fetch', async () => {
         const client = new HttpClient();
+        await fetch(url);
         const response = await client.request({
             path: '/',
             origin: url,
             method: 'GET',
         });
-        await afterEach(client);
+        assert.strictEqual(response.statusCode, 200);
+        await client.close();
+        await fetch(url);
+        await client.close();
     });
+    await closeServer(server);
+});
+
+await test('http-client - abort controller', async (t) => {
+    // Slow responding server to enable us to abort a request
+    const slowServer = http.createServer(async (request, response) => {
+        await wait(200);
+        response.writeHead(200);
+        response.end();
+    });
+    slowServer.listen(2010, host);
+    await t.test('cancel a request', async () => {
+        const abortController = new AbortController();
+        let aborted = false;
+        setTimeout(() => {
+            abortController.abort();
+            aborted = true;
+        }, 100);
+        const client = new HttpClient({ timeout: 2000 });
+        await client.request({
+            path: '/',
+            origin: 'http://localhost:2010',
+            method: 'GET',
+        });
+        assert.ok(aborted);
+        await client.close();
+    });
+
+    // await t.test('auto renew an abort controller', async () => {
+    //     const abortController = new AbortController();
+    //     const client = new HttpClient({ timeout: 2000 });
+    //     await client.request({
+    //         autoRenewAbortController: true,
+    //         path: '/',
+    //         origin: 'http://localhost:2010',
+    //         method: 'GET',
+    //     });
+    //     await client.close();
+    // });
+    slowServer.close();
 });
 
 await test('http-client - circuit breaker behaviour', async (t) => {
+    const url = `http://${host}:${port}`;
     await t.test('opens on failure threshold', async () => {
         beforeEach();
         const invalidUrl = `http://${host}:3013`;
