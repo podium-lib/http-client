@@ -155,6 +155,45 @@ await test('http-client - abort controller', async (t) => {
     slowServer.close();
 });
 
+await test('http-client - redirects', async (t) => {
+    const to = http.createServer(async (request, response) => {
+        response.writeHead(200);
+        response.end();
+    });
+    to.listen(3033, host);
+
+    const from = http.createServer(async (request, response) => {
+        if (request.url === '/redirect') {
+            response.setHeader('location', 'http://localhost:3033');
+        }
+        response.writeHead(301);
+        response.end();
+    });
+    from.listen(port, host);
+
+    await t.test('can follow redirects', async () => {
+        const client = new HttpClient({ threshold: 50, followRedirects: true });
+        const response = await client.request({
+            method: 'GET',
+            origin: `http://${host}:${port}`,
+            path: '/redirect',
+        });
+        assert.strictEqual(response.statusCode, 200);
+    });
+    // await t.test.skip('throw on max redirects', async () => {});
+    await t.test('does not follow redirects by default', async () => {
+        const client = new HttpClient({ threshold: 50 });
+        const response = await client.request({
+            method: 'GET',
+            origin: `http://${host}:${port}`,
+            path: '/redirect',
+        });
+        assert.strictEqual(response.statusCode, 301);
+    });
+    from.close();
+    to.close();
+});
+
 await test('http-client - circuit breaker behaviour', async (t) => {
     const url = `http://${host}:${port}`;
     await t.test('opens on failure threshold', async () => {

@@ -41,9 +41,10 @@ const client = new HttpClient(options);
 
 | option              | default      | type       | required | details                                                                                                                                    |
 |---------------------|--------------|------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| abortController     | `undefined`  | `object`   | no       | See [abortController](#abortController)                                                                                                        |
+| abortController     | `undefined`  | `object`   | no       | See [abortController](#abortController)                                                                                                    |
 | connections         | `50`         | `number`   | no       | See [connections](#connections)                                                                                                            |
-| fallback            | `undefined`  | `function` | no       | Function to call when requests fail                                                                                                        |
+| fallback            | `undefined`  | `function` | no       | Function to call when requests fail, see [fallback](#fallback)                                                                             |
+| followRedirects     | `false`      | `boolean`  | no       | Flag for whether to follow redirects or not, see [followRedirects](#followRedirects).                                                      |
 | keepAliveMaxTimeout | `undefined`  | `number`   | no       | See [keepAliveMaxTimeout](#keepAliveMaxTimeout)                                                                                            |
 | keepAliveTimeout    | `undefined`  | `number`   | no       | See [keepAliveTimeout](#keepAliveTimeout)                                                                                                  |
 | logger              | `undefined ` | `object`   | no       | A logger which conform to a log4j interface                                                                                                |
@@ -71,6 +72,15 @@ Optional function to run when a request fails.
 ```js
 // TBA
 ```
+
+##### followRedirects
+
+TODO!!!   decide what to do with the redirects stuff...
+
+By default, the library does not follow redirect.
+If set to true it will follow redirects according to `maxRedirections`.
+It will by default throw on reaching `throwOnMaxRedirects`
+
 
 ##### keepAliveMaxTimeout
 
