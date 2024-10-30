@@ -32,14 +32,18 @@ async function queryUrl({
     path = '/',
     url = `http://${host}:${port}`,
     loop = 2,
-    supresErrors = true,
+    suppressErrors = true,
 }) {
-    for (let i = 0; i < loop; i++) {
+    const errors = [];
+    for (let i = 0; i <= loop; i++) {
         try {
             await client.request({ path, origin: url, method: 'GET' });
         } catch (err) {
-            if (!supresErrors) throw err;
+            if (!suppressErrors) errors.push(err);
         }
+    }
+    if (errors.length > 0) {
+        throw new Error(errors.toString());
     }
 }
 await test('http-client - basics', async (t) => {
@@ -119,34 +123,55 @@ await test('http-client - circuit breaker behaviour', async (t) => {
     const url = `http://${host}:${port}`;
     await t.test('opens on failure threshold', async () => {
         beforeEach();
-        const invalidUrl = `http://${host}:3013`;
+        const invalidUrl = `http://${host}asas:3013`;
         const client = new HttpClient({ threshold: 50 });
-        let hasOpened = false;
-        client.on('open', () => {
-            hasOpened = true;
-        });
-        await queryUrl({ client, url: invalidUrl });
 
-        assert.strictEqual(hasOpened, true);
+        let broken = 0;
+        for (let i = 0; i < 5; i++) {
+            try {
+                await client.request({
+                    path: '/',
+                    origin: invalidUrl,
+                    method: 'GET',
+                });
+            } catch (err) {
+                if (err.code === 'EOPENBREAKER') {
+                    broken++;
+                }
+            }
+        }
+        assert.strictEqual(
+            broken,
+            4,
+            `breaker open on 4 out of 5 requests, was ${broken}`,
+        );
         await afterEach(client);
     });
     await t.test('can reset breaker', async () => {
         beforeEach();
-        const invalidUrl = `http://${host}:3013`;
-        const client = new HttpClient({ threshold: 50, reset: 1 });
-        await queryUrl({ client, url: invalidUrl });
-
-        let hasClosed = false;
-        client.on('close', () => {
-            hasClosed = true;
-        });
-        await wait();
+        const invalidUrl = `http://${host}:3023`;
+        const breakerReset = 10;
+        const client = new HttpClient({ threshold: 50, reset: breakerReset });
+        let isOpen = false;
+        try {
+            await queryUrl({
+                client,
+                loop: 4,
+                url: invalidUrl,
+                suppressErrors: false,
+            });
+        } catch (err) {
+            if (err.toString().indexOf('Breaker is open') !== -1) {
+                isOpen = true;
+            }
+        }
+        assert.strictEqual(isOpen, true, `breaker opened, ${isOpen}`);
+        await wait(breakerReset + 10); // wait for the breaker to close
         const response = await client.request({
             path: '/',
             origin: url,
             method: 'GET',
         });
-        assert.strictEqual(hasClosed, true);
         assert.strictEqual(response.statusCode, 200);
         await afterEach(client);
     });
