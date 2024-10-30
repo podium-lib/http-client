@@ -39,7 +39,8 @@ async function queryUrl({
         try {
             await client.request({ path, origin: url, method: 'GET' });
         } catch (err) {
-            if (!suppressErrors) errors.push(err);
+            // Push the actual cause here for the tests
+            if (!suppressErrors) errors.push(err.cause);
         }
     }
     if (errors.length > 0) {
@@ -77,6 +78,41 @@ await test('http-client - basics', async (t) => {
         await fetch(url);
         await client.close();
     });
+
+    await t.test('throws error when no fallback provided', async () => {
+        const client = new HttpClient();
+        assert.rejects(
+            async () => {
+                await client.request({
+                    path: '/',
+                    origin: 'https://does-not-exist.domain',
+                    method: 'GET',
+                });
+            },
+            {
+                name: 'HttpClientError',
+                message: 'Error on GET https://does-not-exist.domain/',
+            },
+        );
+        await client.close();
+    });
+    await t.test('does not throw when fallback provided', async () => {
+        let isCaught = false;
+        const client = new HttpClient({
+            fallback: () => {
+                isCaught = true;
+            },
+        });
+
+        await client.request({
+            path: '/',
+            origin: 'https://does-not-exist.domain',
+            method: 'GET',
+        });
+        assert.strictEqual(isCaught, true);
+        await client.close();
+    });
+
     await closeServer(server);
 });
 
@@ -123,7 +159,7 @@ await test('http-client - circuit breaker behaviour', async (t) => {
     const url = `http://${host}:${port}`;
     await t.test('opens on failure threshold', async () => {
         beforeEach();
-        const invalidUrl = `http://${host}asas:3013`;
+        const invalidUrl = `http://${host}:3013`;
         const client = new HttpClient({ threshold: 50 });
 
         let broken = 0;
@@ -135,7 +171,7 @@ await test('http-client - circuit breaker behaviour', async (t) => {
                     method: 'GET',
                 });
             } catch (err) {
-                if (err.code === 'EOPENBREAKER') {
+                if (err.cause.code === 'EOPENBREAKER') {
                     broken++;
                 }
             }

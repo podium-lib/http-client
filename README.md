@@ -39,22 +39,28 @@ const client = new HttpClient(options);
 
 #### options
 
-| option                | default      | type       | required | details                                                                                                                                    |
-|-----------------------|--------------|------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| connections           | `50`         | `number`   | no       | See [connections](#connections)                                                                                                            |
-| fallback              | `undefined`  | `function` | no       | Function to call when requests fail                                                                                                        |
-| keepAliveMaxTimeout   | `undefined`  | `number`   | no       | See [keepAliveMaxTimeout](#keepAliveMaxTimeout)                                                                                            |
-| keepAliveTimeout      | `undefined`  | `number`   | no       | See [keepAliveTimeout](#keepAliveTimeout)                                                                                                  |
-| logger                | `undefined ` | `object`   | no       | A logger which conform to a log4j interface                                                                                                |
-| pipelining            | `10`         | `number`   | no       | See [pipelining](#pipelining)                                                                                                              |
-| reset                 | `2000`       | `number`   | no       | Circuit breaker: How long, in milliseconds, to wait before a tripped circuit should be reset.                                              |
-| threshold             | `25`         | `number`   | no       | Circuit breaker: How many, in %, requests should error before the circuit should trip. Ex; when 25% of requests fail, trip the circuit.    |
-| throwOn400            | `false`      | `boolean`  | no       | If the client should throw on HTTP 400 errors.If true, HTTP 400 errors will counts against tripping the circuit.                           |
-| throwOn500            | `true`       | `boolean`  | no       | If the client should throw on HTTP 500 errors.If true, HTTP 500 errors will counts against tripping the circuit.                           |
-| timeout               | `500`        | `number`   | no       | Circuit breaker: How long, in milliseconds, a request can maximum take. Requests exceeding this limit counts against tripping the circuit. |
+| option              | default      | type       | required | details                                                                                                                                    |
+|---------------------|--------------|------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| abortController     | `undefined`  | `object`   | no       | See [abortController](#abortController)                                                                                                        |
+| connections         | `50`         | `number`   | no       | See [connections](#connections)                                                                                                            |
+| fallback            | `undefined`  | `function` | no       | Function to call when requests fail                                                                                                        |
+| keepAliveMaxTimeout | `undefined`  | `number`   | no       | See [keepAliveMaxTimeout](#keepAliveMaxTimeout)                                                                                            |
+| keepAliveTimeout    | `undefined`  | `number`   | no       | See [keepAliveTimeout](#keepAliveTimeout)                                                                                                  |
+| logger              | `undefined ` | `object`   | no       | A logger which conform to a log4j interface                                                                                                |
+| pipelining          | `10`         | `number`   | no       | See [pipelining](#pipelining)                                                                                                              |
+| reset               | `2000`       | `number`   | no       | Circuit breaker: How long, in milliseconds, to wait before a tripped circuit should be reset.                                              |
+| threshold           | `25`         | `number`   | no       | Circuit breaker: How many, in %, requests should error before the circuit should trip. Ex; when 25% of requests fail, trip the circuit.    |
+| throwOn400          | `false`      | `boolean`  | no       | If the client should throw on HTTP 400 errors.If true, HTTP 400 errors will counts against tripping the circuit.                           |
+| throwOn500          | `true`       | `boolean`  | no       | If the client should throw on HTTP 500 errors.If true, HTTP 500 errors will counts against tripping the circuit.                           |
+| timeout             | `500`        | `number`   | no       | Circuit breaker: How long, in milliseconds, a request can maximum take. Requests exceeding this limit counts against tripping the circuit. |
 
+
+##### abortController
+
+Passing in an [AbortController](https://nodejs.org/docs/latest/api/globals.html#globals_class_abortcontroller) enables aborting requests.
 
 ##### connections
+
 Property is sent to the underlying http library.
 See library docs on [connections](https://undici.nodejs.org/#/docs/api/Pool?id=parameter-pooloptions)
 
@@ -120,7 +126,29 @@ If the client should throw on http 500 errors. If true, http 500 errors will cou
 
 ## Methods
 
+### async request(options = {})
 
+Sends a request using the passed in options object.
+
+| name    | type            | description                                     |
+|---------|-----------------|-------------------------------------------------|
+| origin  | `string \| URL` | Request origin, ex `https://server.domain:9090` |
+| path    | `string`        | URL path, ex `/foo`                             |
+| method  | `string`        | HTTP method name                                |
+| headers | `object`        | Object with key / value which are strings       |
+| query   | `object`        | Object with key / value which are strings       |
+| signal  | `AbortSignal`   | Abort signal for canceling requests.            |
+
+For a complete list of options, consult the [undici documentation](https://undici.nodejs.org/#/?id=undicirequesturl-options-promise).
+
+
+### async close()
+
+Closes the client and it's connections.
+
+## HttpClientError
+
+Errors thrown from the library will be of the class `HttpClientError`
 
 [@metrics/metric]: https://github.com/metrics-js/metric '@metrics/metric'
 [abslog]: https://github.com/trygve-lie/abslog 'abslog'
