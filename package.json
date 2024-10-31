@@ -1,56 +1,59 @@
 {
-  "name": "@podium/http-client",
-  "version": "1.0.0-beta.1",
-  "type": "module",
-  "description": "The HTTP client used for all HTTP requests in Podium",
-  "main": "lib/http-client.js",
-  "directories": {
-    "lib": "lib",
-    "test": "tests"
-  },
-  "scripts": {
-    "bench": "PORT=3042 concurrently -k -s first npm:bench:server npm:bench:run",
-    "bench:run": "CONNECTIONS=1 node benchmarks/benchmark.js; CONNECTIONS=50 node benchmarks/benchmark.js",
-    "bench:server": "node benchmarks/server.js",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "prebench:run": "node benchmarks/wait.js",
-    "test": "node --test",
-    "test:watch": "node --test --watch",
-    "types": "run-s types:tsc types:test",
-    "types:tsc": "tsc",
-    "types:test": "tsc --project tsconfig.test.json"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/podium-lib/http-client.git"
-  },
-  "author": "Trygve Lie",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/podium-lib/http-client/issues"
-  },
-  "homepage": "https://github.com/podium-lib/http-client#readme",
-  "dependencies": {
-    "@metrics/client": "2.5.3",
-    "abslog": "2.4.4",
-    "http-errors": "2.0.0",
-    "opossum": "8.3.0",
-    "undici": "6.20.1"
-  },
-  "devDependencies": {
-    "@podium/eslint-config": "1.0.2",
-    "@podium/semantic-release-config": "2.0.0",
-    "@podium/typescript-config": "1.0.0",
-    "@types/node": "20.17.3",
-    "@types/opossum": "8.1.8",
-    "concurrently": "9.0.1",
-    "cronometro": "4.0.0",
-    "eslint": "9.13.0",
-    "npm-run-all2": "6.2.6",
-    "prettier": "3.3.3",
-    "table": "6.8.2",
-    "typescript": "5.6.3",
-    "wait-on": "8.0.1"
-  }
+    "name": "@podium/http-client",
+    "version": "1.0.0-beta.1",
+    "type": "module",
+    "description": "The HTTP client used for all HTTP requests in Podium",
+    "main": "lib/http-client.js",
+    "directories": {
+        "lib": "lib",
+        "test": "tests"
+    },
+    "scripts": {
+        "bench": "PORT=3042 concurrently -k -s first npm:bench:server npm:bench:run",
+        "bench:run": "CONNECTIONS=1 node benchmarks/benchmark.js; CONNECTIONS=50 node benchmarks/benchmark.js",
+        "bench:server": "node benchmarks/server.js",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "prebench:run": "node benchmarks/wait.js",
+        "test": "node --test",
+        "test:watch": "node --test --watch",
+        "types": "run-s types:tsc types:test",
+        "types:tsc": "tsc",
+        "types:test": "tsc --project tsconfig.test.json"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/podium-lib/http-client.git"
+    },
+    "author": "Trygve Lie",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/podium-lib/http-client/issues"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "homepage": "https://github.com/podium-lib/http-client#readme",
+    "dependencies": {
+        "@metrics/client": "2.5.3",
+        "abslog": "2.4.4",
+        "http-errors": "2.0.0",
+        "opossum": "8.3.0",
+        "undici": "6.20.1"
+    },
+    "devDependencies": {
+        "@podium/eslint-config": "1.0.2",
+        "@podium/semantic-release-config": "2.0.0",
+        "@podium/typescript-config": "1.0.0",
+        "@types/node": "20.17.3",
+        "@types/opossum": "8.1.8",
+        "concurrently": "9.0.1",
+        "cronometro": "4.0.0",
+        "eslint": "9.13.0",
+        "npm-run-all2": "6.2.6",
+        "prettier": "3.3.3",
+        "table": "6.8.2",
+        "typescript": "5.6.3",
+        "wait-on": "8.0.1"
+    }
 }
