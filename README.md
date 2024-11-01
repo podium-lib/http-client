@@ -156,10 +156,6 @@ For a complete list of options, consult the [undici documentation](https://undic
 
 Closes the client and it's connections.
 
-## HttpClientError
-
-Errors thrown from the library will be of the class `HttpClientError`
-
 [@metrics/metric]: https://github.com/metrics-js/metric '@metrics/metric'
 [abslog]: https://github.com/trygve-lie/abslog 'abslog'
 [undici]: https://undici.nodejs.org/

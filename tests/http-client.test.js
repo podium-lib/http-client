@@ -40,7 +40,7 @@ async function queryUrl({
             await client.request({ path, origin: url, method: 'GET' });
         } catch (err) {
             // Push the actual cause here for the tests
-            if (!suppressErrors) errors.push(err.cause);
+            if (!suppressErrors) errors.push(err);
         }
     }
     if (errors.length > 0) {
@@ -90,8 +90,7 @@ await test('http-client - basics', async (t) => {
                 });
             },
             {
-                name: 'HttpClientError',
-                message: 'Error on GET https://does-not-exist.domain/',
+                name: 'Error',
             },
         );
         await client.close();
@@ -210,7 +209,7 @@ await test('http-client - circuit breaker behaviour', async (t) => {
                     method: 'GET',
                 });
             } catch (err) {
-                if (err.cause.code === 'EOPENBREAKER') {
+                if (err.toString() === 'Error: Breaker is open') {
                     broken++;
                 }
             }
@@ -222,6 +221,7 @@ await test('http-client - circuit breaker behaviour', async (t) => {
         );
         await afterEach(client);
     });
+
     await t.test('can reset breaker', async () => {
         beforeEach();
         const invalidUrl = `http://${host}:3023`;
@@ -250,4 +250,7 @@ await test('http-client - circuit breaker behaviour', async (t) => {
         assert.strictEqual(response.statusCode, 200);
         await afterEach(client);
     });
+    // await t.test('has a .metrics property', async () => {
+    //     const client = new HttpClient({ threshold: 50, reset: breakerReset });
+    // });
 });

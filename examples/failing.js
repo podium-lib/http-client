@@ -1,4 +1,4 @@
-import HttpClient, { HttpClientError } from '../lib/http-client.js';
+import HttpClient from '../lib/http-client.js';
 
 /**
  * Example of the circuit breaker opening on a failing request.
@@ -22,9 +22,7 @@ try {
         method: 'GET',
     });
 } catch (err) {
-    if (err instanceof HttpClientError) {
-        if (err.code === HttpClientError.ServerDown) {
-            console.error('Server unavailable..');
-        }
+    if (err.toString() === 'Error: Breaker is open') {
+        console.error('Server unavailable..');
     }
 }
