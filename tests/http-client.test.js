@@ -250,7 +250,71 @@ await test('http-client - circuit breaker behaviour', async (t) => {
         assert.strictEqual(response.statusCode, 200);
         await afterEach(client);
     });
-    // await t.test('has a .metrics property', async () => {
-    //     const client = new HttpClient({ threshold: 50, reset: breakerReset });
-    // });
+});
+
+await test('http-client: metrics', async (t) => {
+    await t.test('has a .metrics property', () => {
+        const client = new HttpClient();
+        assert.notEqual(client.metrics, undefined);
+    });
+    await t.test('metric on open breakers', async () => {
+        beforeEach();
+        const url = 'http://lochost:3003';
+        const client = new HttpClient({
+            threshold: 1,
+            reset: 10,
+            throwOn400: false,
+            throwOn500: false,
+        });
+        const metrics = [];
+        //@ts-expect-error
+        client.metrics.on('data', (metric) => {
+            metrics.push(metric);
+        });
+        //@ts-expect-error
+        client.metrics.on('end', () => {
+            assert.strictEqual(metrics.length, 6);
+            assert.strictEqual(metrics[0].name, 'http_client_breaker_events');
+            assert.strictEqual(metrics[0].type, 2);
+            assert.strictEqual(metrics[0].labels[0].value, 'fire');
+            assert.strictEqual(metrics[0].labels[1].value, '/not-found');
+
+            assert.strictEqual(metrics[1].name, 'http_client_breaker_events');
+            assert.strictEqual(metrics[1].type, 2);
+            assert.strictEqual(metrics[1].labels[0].value, 'failure');
+
+            assert.strictEqual(metrics[2].name, 'http_client_breaker_events');
+            assert.strictEqual(metrics[2].type, 2);
+            assert.strictEqual(metrics[2].labels[0].value, 'open');
+
+            assert.strictEqual(metrics[3].name, 'http_client_breaker_events');
+            assert.strictEqual(metrics[3].type, 2);
+            assert.strictEqual(metrics[3].labels[0].value, 'fire');
+
+            assert.strictEqual(metrics[4].name, 'http_client_breaker_events');
+            assert.strictEqual(metrics[4].type, 2);
+            assert.strictEqual(metrics[4].labels[0].value, 'close');
+        });
+        try {
+            // Make the circuit open
+            await client.request({
+                path: '/not-found',
+                origin: url,
+                method: 'GET',
+            });
+            // eslint-disable-next-line no-unused-vars
+        } catch (_) {
+            //
+        }
+        await wait(11);
+        // Wait for circuit to reset, before using the client again.
+        await client.request({
+            path: '/',
+            origin: 'http://localhost:3003',
+            method: 'GET',
+        });
+        //@ts-expect-error
+        client.metrics.push(null);
+        await afterEach(client);
+    });
 });
