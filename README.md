@@ -156,6 +156,15 @@ For a complete list of options, consult the [undici documentation](https://undic
 
 Closes the client and it's connections.
 
+## Metrics
+
+The expose metrics on the circuit breaking behaviour.
+
+| name                         | type    | description                                                                               |
+|------------------------------|---------|-------------------------------------------------------------------------------------------|
+| `http_client_breaker_events` | counter | Counters on events exposed by the circuit breaker library,<br/>see  [opossum] for details |
+
+
 [@metrics/metric]: https://github.com/metrics-js/metric '@metrics/metric'
 [abslog]: https://github.com/trygve-lie/abslog 'abslog'
 [undici]: https://undici.nodejs.org/
