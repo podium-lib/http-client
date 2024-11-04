@@ -1,3 +1,10 @@
+# [1.0.0-beta.3](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2024-11-04)
+
+
+### Bug Fixes
+
+* adding .metrics property and circuit breaker metrics ([3283f5f](https://github.com/podium-lib/http-client/commit/3283f5fbe139efeacd1cc67b0a576a3587b14acd))
+
 # [1.0.0-beta.2](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2024-11-01)
 
 
