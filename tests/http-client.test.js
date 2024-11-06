@@ -1,5 +1,5 @@
 import { test, before, after, afterEach, beforeEach } from 'node:test';
-import { ok, rejects, notStrictEqual, strictEqual } from 'node:assert/strict';
+import { rejects, notStrictEqual, strictEqual } from 'node:assert/strict';
 import http from 'node:http';
 
 import HttpClient from '../lib/http-client.js';
