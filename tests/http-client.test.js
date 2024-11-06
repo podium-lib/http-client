@@ -4,6 +4,7 @@ import http from 'node:http';
 
 import HttpClient from '../lib/http-client.js';
 import { wait } from './utilities.js';
+import { MockAgent, setGlobalDispatcher } from 'undici';
 
 let httpServer,
     host = 'localhost',
@@ -203,6 +204,35 @@ await test('http-client - redirects', async (t) => {
         });
         strictEqual(response.statusCode, 301);
     });
+});
+
+await test('http-client - retries', async (t) => {
+    await t.test(
+        `uses the 'retries' options on incoming requests`,
+        async () => {
+            const agent = new MockAgent();
+            agent.disableNetConnect();
+            // setGlobalDispatcher(agent);
+            agent
+                .get('http://somepath.dk')
+                .intercept({
+                    path: '/',
+                    method: 'GET',
+                })
+                .reply(400, {});
+
+            const client = new HttpClient({ agent });
+            await client.request({
+                path: '/',
+                origin: 'http://somepath.dk',
+                method: 'GET',
+                retries: 2,
+                dispatcher: agent,
+            });
+            strictEqual(agent._eventsCount, 2);
+            agent.assertNoPendingInterceptors();
+        },
+    );
 });
 
 await test('http-client - circuit breaker behaviour', async (t) => {
