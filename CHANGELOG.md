@@ -1,3 +1,11 @@
+# [1.0.0-beta.4](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2024-11-06)
+
+
+### Bug Fixes
+
+* supporting more request options and metrics on breaker events ([1a62a07](https://github.com/podium-lib/http-client/commit/1a62a07de4c070738cebdd9f02a9e73c7fab784f))
+* supporting more request options and metrics on breaker events ([c5ea66b](https://github.com/podium-lib/http-client/commit/c5ea66b620cb5d5a3fec12b9be0735bb8d0ad6ee))
+
 # [1.0.0-beta.3](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2024-11-04)
 
 
