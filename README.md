@@ -42,6 +42,7 @@ const client = new HttpClient(options);
 | option              | default      | type       | required | details                                                                                                                                    |
 |---------------------|--------------|------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------|
 | abortController     | `undefined`  | `object`   | no       | See [abortController](#abortController)                                                                                                    |
+| clientName          | `''`         | `string`   | no       | Client name                                                                                                                                |
 | connections         | `50`         | `number`   | no       | See [connections](#connections)                                                                                                            |
 | fallback            | `undefined`  | `function` | no       | Function to call when requests fail, see [fallback](#fallback)                                                                             |
 | followRedirects     | `false`      | `boolean`  | no       | Flag for whether to follow redirects or not, see [followRedirects](#followRedirects).                                                      |
@@ -140,14 +141,16 @@ If the client should throw on http 500 errors. If true, http 500 errors will cou
 
 Sends a request using the passed in options object.
 
-| name    | type            | description                                     |
-|---------|-----------------|-------------------------------------------------|
-| origin  | `string \| URL` | Request origin, ex `https://server.domain:9090` |
-| path    | `string`        | URL path, ex `/foo`                             |
-| method  | `string`        | HTTP method name                                |
-| headers | `object`        | Object with key / value which are strings       |
-| query   | `object`        | Object with key / value which are strings       |
-| signal  | `AbortSignal`   | Abort signal for canceling requests.            |
+| name         | type            | description                                     |
+|--------------|-----------------|-------------------------------------------------|
+| headers      | `object`        | Object with key / value which are strings       |
+| method       | `string`        | HTTP method name                                |
+| origin       | `string \| URL` | Request origin, ex `https://server.domain:9090` |
+| path         | `string`        | URL path, ex `/foo`                             |
+| query        | `object`        | Object with key / value which are strings       |
+| redirectable | `boolean`       | If we should follow redirects or not.           |
+| signal       | `AbortSignal`   | Abort signal for canceling requests.            |
+| throwable    | `boolean`       | If we should throw on errors.                   |
 
 For a complete list of options, consult the [undici documentation](https://undici.nodejs.org/#/?id=undicirequesturl-options-promise).
 

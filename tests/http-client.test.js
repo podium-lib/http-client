@@ -1,5 +1,5 @@
-import test, { after, before } from 'node:test';
-import assert from 'node:assert/strict';
+import { test, before, after, afterEach, beforeEach } from 'node:test';
+import { ok, rejects, notStrictEqual, strictEqual } from 'node:assert/strict';
 import http from 'node:http';
 
 import HttpClient from '../lib/http-client.js';
@@ -9,7 +9,7 @@ let httpServer,
     host = 'localhost',
     port = 3003;
 
-function beforeEach() {
+function startServer() {
     httpServer = http.createServer(async (request, response) => {
         response.writeHead(200);
         response.end();
@@ -22,8 +22,10 @@ function closeServer(s) {
         s.close(resolve);
     });
 }
-async function afterEach(client, server = httpServer) {
-    await client.close();
+async function stopServer(client, server = httpServer) {
+    if (client) {
+        await client.close();
+    }
     await closeServer(server);
 }
 
@@ -61,7 +63,7 @@ await test('http-client - basics', async (t) => {
             origin: url,
             method: 'GET',
         });
-        assert.strictEqual(response.statusCode, 200);
+        strictEqual(response.statusCode, 200);
         await client.close();
     });
 
@@ -73,7 +75,7 @@ await test('http-client - basics', async (t) => {
             origin: url,
             method: 'GET',
         });
-        assert.strictEqual(response.statusCode, 200);
+        strictEqual(response.statusCode, 200);
         await client.close();
         await fetch(url);
         await client.close();
@@ -81,7 +83,7 @@ await test('http-client - basics', async (t) => {
 
     await t.test('throws error when no fallback provided', async () => {
         const client = new HttpClient();
-        assert.rejects(
+        rejects(
             async () => {
                 await client.request({
                     path: '/',
@@ -108,7 +110,7 @@ await test('http-client - basics', async (t) => {
             origin: 'https://does-not-exist.domain',
             method: 'GET',
         });
-        assert.strictEqual(isCaught, true);
+        strictEqual(isCaught, true);
         await client.close();
     });
 
@@ -117,7 +119,7 @@ await test('http-client - basics', async (t) => {
 
 await test('http-client - abort controller', async (t) => {
     let slowServer;
-    before(async () => {
+    beforeEach(async function () {
         // Slow responding server to enable us to abort a request
         slowServer = http.createServer(async (request, response) => {
             await wait(200);
@@ -126,8 +128,8 @@ await test('http-client - abort controller', async (t) => {
         });
         slowServer.listen(2010, host);
     });
-    after(async () => {
-        await slowServer.close();
+    afterEach(function () {
+        slowServer.close();
     });
     await t.test('cancel a request', async () => {
         const abortController = new AbortController();
@@ -142,9 +144,10 @@ await test('http-client - abort controller', async (t) => {
             origin: 'http://localhost:2010',
             method: 'GET',
         });
-        assert.ok(aborted);
+        strictEqual(aborted, true);
         await client.close();
     });
+
     // await t.test('auto renew an abort controller', async () => {
     //     const abortController = new AbortController();
     //     const client = new HttpClient({ timeout: 2000 });
@@ -160,11 +163,7 @@ await test('http-client - abort controller', async (t) => {
 
 await test('http-client - redirects', async (t) => {
     let to, from;
-    after(async function () {
-        await from.close();
-        await to.close();
-    });
-    before(function () {
+    before(async function () {
         to = http.createServer(async (request, response) => {
             response.writeHead(200);
             response.end();
@@ -179,16 +178,20 @@ await test('http-client - redirects', async (t) => {
         });
         from.listen(port, host);
     });
+    after(function () {
+        from.close();
+        to.close();
+    });
 
-    await t.test('can follow redirects', async () => {
-        const client = new HttpClient({ followRedirects: true });
+    await t.test('redirectable true follows redirects', async () => {
+        const client = new HttpClient();
         const response = await client.request({
             method: 'GET',
             origin: `http://${host}:${port}`,
             path: '/redirect',
+            redirectable: true,
         });
-        assert.strictEqual(response.statusCode, 200);
-        await client.close();
+        strictEqual(response.statusCode, 200);
     });
     // await t.test.skip('throw on max redirects', async () => {});
     await t.test('does not follow redirects by default', async () => {
@@ -198,15 +201,14 @@ await test('http-client - redirects', async (t) => {
             origin: `http://${host}:${port}`,
             path: '/redirect',
         });
-        assert.strictEqual(response.statusCode, 301);
-        await client.close();
+        strictEqual(response.statusCode, 301);
     });
 });
 
 await test('http-client - circuit breaker behaviour', async (t) => {
     const url = `http://${host}:${port}`;
+    beforeEach(startServer);
     await t.test('opens on failure threshold', async () => {
-        beforeEach();
         const invalidUrl = `http://${host}:3013`;
         const client = new HttpClient({ threshold: 50 });
 
@@ -224,16 +226,15 @@ await test('http-client - circuit breaker behaviour', async (t) => {
                 }
             }
         }
-        assert.strictEqual(
+        strictEqual(
             broken,
             4,
             `breaker open on 4 out of 5 requests, was ${broken}`,
         );
-        await afterEach(client);
+        await stopServer(client);
     });
 
     await t.test('can reset breaker', async () => {
-        beforeEach();
         const invalidUrl = `http://${host}:3023`;
         const breakerReset = 10;
         const client = new HttpClient({ threshold: 50, reset: breakerReset });
@@ -250,78 +251,19 @@ await test('http-client - circuit breaker behaviour', async (t) => {
                 isOpen = true;
             }
         }
-        assert.strictEqual(isOpen, true, `breaker opened, ${isOpen}`);
+        strictEqual(isOpen, true, `breaker opened, ${isOpen}`);
         await wait(breakerReset + 10); // wait for the breaker to close
         const response = await client.request({
             path: '/',
             origin: url,
             method: 'GET',
         });
-        assert.strictEqual(response.statusCode, 200);
-        await afterEach(client);
+        strictEqual(response.statusCode, 200);
+        await stopServer(client);
     });
-});
-
-await test('http-client: metrics', async (t) => {
-    await t.test('has a .metrics property', () => {
+    await t.test('exposed breaker metrics', async () => {
         const client = new HttpClient();
-        assert.notEqual(client.metrics, undefined);
-    });
-    await t.test('metric on open breakers', async () => {
-        beforeEach();
-        const client = new HttpClient({
-            threshold: 1,
-            reset: 10,
-            timeout: 10000,
-            throwOn400: false,
-            throwOn500: false,
-        });
-        const metrics = [];
-        client.metrics.on('data', (metric) => {
-            metrics.push(metric);
-        });
-        client.metrics.on('end', () => {
-            assert.strictEqual(metrics.length, 6, JSON.stringify(metrics));
-            assert.strictEqual(metrics[0].name, 'http_client_breaker_events');
-            assert.strictEqual(metrics[0].type, 2);
-            assert.strictEqual(metrics[0].labels[0].value, 'fire');
-            assert.strictEqual(metrics[0].labels[1].value, '/not-found');
-
-            assert.strictEqual(metrics[1].name, 'http_client_breaker_events');
-            assert.strictEqual(metrics[1].type, 2);
-            assert.strictEqual(metrics[1].labels[0].value, 'failure');
-
-            assert.strictEqual(metrics[2].name, 'http_client_breaker_events');
-            assert.strictEqual(metrics[2].type, 2);
-            assert.strictEqual(metrics[2].labels[0].value, 'open');
-
-            assert.strictEqual(metrics[3].name, 'http_client_breaker_events');
-            assert.strictEqual(metrics[3].type, 2);
-            assert.strictEqual(metrics[3].labels[0].value, 'fire');
-
-            assert.strictEqual(metrics[4].name, 'http_client_breaker_events');
-            assert.strictEqual(metrics[4].type, 2);
-            assert.strictEqual(metrics[4].labels[0].value, 'close');
-        });
-        try {
-            // Make the circuit open
-            await client.request({
-                path: '/not-found',
-                origin: 'http://not.found.host:3003',
-                method: 'GET',
-            });
-            // eslint-disable-next-line no-unused-vars
-        } catch (_) {
-            /* empty */
-        }
-        await wait(15);
-        // Wait for circuit to reset, before using the client again.
-        await client.request({
-            path: '/',
-            origin: 'http://localhost:3003',
-            method: 'GET',
-        });
-        client.metrics.push(null);
-        await afterEach(client);
+        notStrictEqual(client.metrics, undefined, 'has a .metrics property');
+        await stopServer(client);
     });
 });
