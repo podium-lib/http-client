@@ -1,3 +1,11 @@
+# [1.0.0-beta.5](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2024-11-07)
+
+
+### Bug Fixes
+
+* adding back breaker metrics tests ([16b65b5](https://github.com/podium-lib/http-client/commit/16b65b513a1d6932316b781c4e675e0956a76691))
+* adjusting abort controller implementation ([5820d35](https://github.com/podium-lib/http-client/commit/5820d35fb0be8afd4c4886997ec07f69ebf0b5b5))
+
 # [1.0.0-beta.4](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2024-11-06)
 
 
