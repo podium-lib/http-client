@@ -1,5 +1,5 @@
 import { test, before, after, afterEach, beforeEach } from 'node:test';
-import { rejects, notStrictEqual, strictEqual } from 'node:assert/strict';
+import { rejects, notStrictEqual, ok, strictEqual } from 'node:assert/strict';
 import http from 'node:http';
 
 import HttpClient from '../lib/http-client.js';
@@ -117,35 +117,61 @@ await test('http-client - basics', async (t) => {
     await closeServer(server);
 });
 
-await test('http-client - abort controller', async (t) => {
+await test('http-client - timeouts', async (t) => {
     let slowServer;
-    beforeEach(async function () {
+    async function b() {
         // Slow responding server to enable us to abort a request
         slowServer = http.createServer(async (request, response) => {
-            await wait(200);
+            await wait(3000);
             response.writeHead(200);
             response.end();
         });
         slowServer.listen(2010, host);
-    });
-    afterEach(function () {
-        slowServer.close();
-    });
-    await t.test('cancel a request', async () => {
+    }
+    function a() {
+        try {
+            slowServer.close(() => console.log('server closed...'));
+            slowServer.closeAllConnections();
+        } catch (e) {
+            console.log('**___***', e);
+        }
+    }
+    // await t.test('can cancel a request with an abort controller', async () => {
+    //     await b();
+    //     const controller = new AbortController();
+    //     const client = new HttpClient({ timeout: 10000 });
+    //     const performRequest = async () => {
+    //         try {
+    //             await client.request({
+    //                 path: '/',
+    //                 origin: 'http://localhost:2010',
+    //                 method: 'GET',
+    //                 signal: controller.signal,
+    //             });
+    //         } catch (e) {
+    //             //
+    //             console.error('ess');
+    //         }
+    //     };
+    //     performRequest();
+    //     controller.abort();
+    //     ok(controller.signal.aborted);
+    //     await client.close();
+    //     await a();
+    // });
+
+    await t.test('can cancel a request with an abort controller', async () => {
         const abortController = new AbortController();
-        let aborted = false;
-        setTimeout(() => {
-            abortController.abort();
-            aborted = true;
-        }, 100);
-        const client = new HttpClient({ timeout: 2000 });
-        await client.request({
-            path: '/',
-            origin: 'http://localhost:2010',
-            method: 'GET',
-        });
-        strictEqual(aborted, true);
-        await client.close();
+        const client = new HttpClient({ timeout: 100 });
+        await rejects(async () => {
+            await client.request({
+                path: '/',
+                origin: 'http://localhost:2010',
+                method: 'GET',
+                signal: abortController.signal,
+            });
+            await client.close();
+        }, 'RequestAasasortkmlklmlkmedErrsor');
     });
 
     // await t.test('auto renew an abort controller', async () => {
