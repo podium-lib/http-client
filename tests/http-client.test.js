@@ -226,7 +226,7 @@ await test('http-client - redirects', async (t) => {
     });
     // await t.test.skip('throw on max redirects', async () => {});
     await t.test('does not follow redirects by default', async () => {
-        const client = new HttpClient({ threshold: 50 });
+        const client = new HttpClient();
         const response = await client.request({
             method: 'GET',
             origin: `http://${host}:${port}`,
@@ -323,6 +323,11 @@ await test('http-client: metrics', async (t) => {
             strictEqual(requestMetrics[0].labels[0].value, 'GET');
             strictEqual(requestMetrics[0].labels[1].name, 'status');
             strictEqual(requestMetrics[0].labels[1].value, 200);
+            strictEqual(requestMetrics[0].labels[2].name, 'url');
+            strictEqual(
+                requestMetrics[0].labels[2].value,
+                'http://localhost:3003/',
+            );
             ok(requestMetrics[0].value > 0);
 
             strictEqual(requestMetrics[2].type, 2);

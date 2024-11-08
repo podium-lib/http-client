@@ -7,7 +7,8 @@ Generic http client built on [undici] with a circuit breaker using [opossum], er
 [![GitHub Actions status](https://github.com/podium-lib/http-client/workflows/Run%20Lint%20and%20Tests/badge.svg)](https://github.com/podium-lib/layout/actions?query=workflow%3A%22Run+Lint+and+Tests%22)
 [![Known Vulnerabilities](https://snyk.io/test/github/podium-lib/http-client/badge.svg)](https://snyk.io/test/github/podium-lib/http-client)
 
-## Documentation
+**Table of contents:**
+
  - [Installing](#installation)
  - [Usage](#usage)
  - [API](#api)
