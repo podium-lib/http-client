@@ -1,5 +1,5 @@
 import { test, before, after, beforeEach } from 'node:test';
-import { rejects, notStrictEqual, strictEqual } from 'node:assert/strict';
+import { rejects, notStrictEqual, ok, strictEqual } from 'node:assert/strict';
 import http from 'node:http';
 
 import HttpClient from '../lib/http-client.js';
@@ -12,7 +12,11 @@ const url = `http://${host}:${port}`;
 
 function startServer() {
     httpServer = http.createServer(async (request, response) => {
-        response.writeHead(200);
+        if (request.url === '/not-found') {
+            response.writeHead(404);
+        } else {
+            response.writeHead(200);
+        }
         response.end();
     });
     httpServer.listen(port, host);
@@ -294,12 +298,59 @@ await test('http-client: metrics', async (t) => {
         const client = new HttpClient();
         notStrictEqual(client.metrics, undefined);
     });
-    await t.test('metric on open breakers', async () => {
+    await t.test('request metrics', async () => {
         await startServer();
         const client = new HttpClient({
-            threshold: 1,
             reset: 10,
-            timeout: 10000,
+            timeout: 1000,
+            throwOn400: false,
+            throwOn500: false,
+        });
+        const metrics = [];
+        client.metrics.on('data', (metric) => {
+            metrics.push(metric);
+        });
+        client.metrics.on('end', () => {
+            const requestMetrics = metrics.filter(
+                (m) =>
+                    m.name === 'http_client_request_duration' ||
+                    m.name === 'http_client_request_error',
+            );
+            strictEqual(requestMetrics.length, 3);
+            strictEqual(requestMetrics[0].name, 'http_client_request_duration');
+            strictEqual(requestMetrics[0].type, 5);
+            strictEqual(requestMetrics[0].labels[0].name, 'method');
+            strictEqual(requestMetrics[0].labels[0].value, 'GET');
+            strictEqual(requestMetrics[0].labels[1].name, 'status');
+            strictEqual(requestMetrics[0].labels[1].value, 200);
+            ok(requestMetrics[0].value > 0);
+
+            strictEqual(requestMetrics[2].type, 2);
+            strictEqual(requestMetrics[2].name, 'http_client_request_error');
+            strictEqual(requestMetrics[2].labels[0].name, 'method');
+            strictEqual(requestMetrics[2].labels[0].value, 'GET');
+            strictEqual(requestMetrics[2].labels[1].name, 'status');
+            strictEqual(requestMetrics[2].labels[1].value, 404);
+        });
+        await client.request({
+            path: '/',
+            origin: url,
+            method: 'GET',
+        });
+
+        await client.request({
+            path: '/not-found',
+            origin: url,
+            method: 'GET',
+        });
+        client.metrics.push(null);
+        await stopServer(client);
+    });
+    await t.test('breaker metrics', async () => {
+        await startServer();
+        const client = new HttpClient({
+            reset: 10,
+            timeout: 1000,
             throwOn400: false,
             throwOn500: false,
         });
@@ -327,8 +378,6 @@ await test('http-client: metrics', async (t) => {
             await client.request({
                 path: '/not-found',
                 origin: 'http://not.found.host:3003',
-                method: 'GET',
-                throwable: false,
             });
             // eslint-disable-next-line no-unused-vars
         } catch (_) {

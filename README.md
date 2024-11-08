@@ -248,9 +248,11 @@ Closes the client and it's connections.
 
 The expose metrics on the circuit breaking behaviour.
 
-| name                         | type    | description                                                                               |
-|------------------------------|---------|-------------------------------------------------------------------------------------------|
-| `http_client_breaker_events` | counter | Counters on events exposed by the circuit breaker library,<br/>see  [opossum] for details |
+| name                           | type      | description                                                                               |
+|--------------------------------|-----------|-------------------------------------------------------------------------------------------|
+| `http_client_breaker_events`   | counter   | Counters on events exposed by the circuit breaker library,<br/>see  [opossum] for details |
+| `http_client_request_duration` | histogram | Request duration.                                                                         |
+| `http_client_request_errors`   | histogram | HTTP status codes higher than 399.                                                        |
 
 
 [@metrics/metric]: https://github.com/metrics-js/metric '@metrics/metric'
