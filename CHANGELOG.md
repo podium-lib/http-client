@@ -1,3 +1,10 @@
+# [1.0.0-beta.6](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2024-11-11)
+
+
+### Bug Fixes
+
+* updating metrics to collect better things ([efe65e7](https://github.com/podium-lib/http-client/commit/efe65e7de5c3d4b3e11cb0f46a5adf9493cad51b))
+
 # [1.0.0-beta.5](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2024-11-07)
 
 
