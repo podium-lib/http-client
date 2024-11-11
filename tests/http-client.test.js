@@ -1,5 +1,5 @@
-import { test, before, after, beforeEach } from 'node:test';
-import { rejects, notStrictEqual, ok, strictEqual } from 'node:assert/strict';
+import { after, before, beforeEach, test } from 'node:test';
+import { notStrictEqual, ok, rejects, strictEqual } from 'node:assert/strict';
 import http from 'node:http';
 
 import HttpClient from '../lib/http-client.js';
@@ -11,15 +11,17 @@ let httpServer,
 const url = `http://${host}:${port}`;
 
 function startServer() {
-    httpServer = http.createServer(async (request, response) => {
-        if (request.url === '/not-found') {
-            response.writeHead(404);
-        } else {
-            response.writeHead(200);
-        }
-        response.end();
+    return new Promise((resolve) => {
+        httpServer = http.createServer(async (request, response) => {
+            if (request.url === '/not-found') {
+                response.writeHead(404);
+            } else {
+                response.writeHead(200);
+            }
+            response.end();
+        });
+        httpServer.listen(port, host, resolve);
     });
-    httpServer.listen(port, host);
 }
 
 function closeServer(s) {
@@ -27,6 +29,7 @@ function closeServer(s) {
         s.close(resolve);
     });
 }
+
 async function stopServer(client, server = httpServer) {
     if (client) {
         await client.close();
@@ -54,6 +57,7 @@ async function queryUrl({
         throw new Error(errors.toString());
     }
 }
+
 await test('http-client - basics', async (t) => {
     const url = `http://${host}:2001`;
     const server = http.createServer(async (request, response) => {
@@ -222,6 +226,7 @@ await test('http-client - redirects', async (t) => {
             path: '/redirect',
             redirectable: true,
         });
+        await client.close();
         strictEqual(response.statusCode, 200);
     });
     // await t.test.skip('throw on max redirects', async () => {});
@@ -233,6 +238,7 @@ await test('http-client - redirects', async (t) => {
             path: '/redirect',
         });
         strictEqual(response.statusCode, 301);
+        await client.close();
     });
 });
 
@@ -261,6 +267,7 @@ await test('http-client - circuit breaker behaviour', async (t) => {
             4,
             `breaker open on 4 out of 5 requests, was ${broken}`,
         );
+        await client.close();
         await stopServer(client);
     });
 
@@ -289,6 +296,7 @@ await test('http-client - circuit breaker behaviour', async (t) => {
             method: 'GET',
         });
         strictEqual(response.statusCode, 200);
+        await client.close();
         await stopServer(client);
     });
 });
@@ -300,16 +308,23 @@ await test('http-client: metrics', async (t) => {
     });
     await t.test('request metrics', async () => {
         await startServer();
-        const client = new HttpClient({
-            reset: 10,
-            timeout: 1000,
-            throwOn400: false,
-            throwOn500: false,
-        });
+        const client = new HttpClient();
         const metrics = [];
         client.metrics.on('data', (metric) => {
             metrics.push(metric);
         });
+        client.metrics.on('end', () => {});
+        await client.request({
+            path: '/',
+            origin: url,
+            method: 'GET',
+        });
+        await client.request({
+            path: '/not-found',
+            origin: url,
+            method: 'GET',
+        });
+        client.metrics.push(null);
         client.metrics.on('end', () => {
             const requestMetrics = metrics.filter(
                 (m) =>
@@ -337,20 +352,10 @@ await test('http-client: metrics', async (t) => {
             strictEqual(requestMetrics[2].labels[1].name, 'status');
             strictEqual(requestMetrics[2].labels[1].value, 404);
         });
-        await client.request({
-            path: '/',
-            origin: url,
-            method: 'GET',
-        });
-
-        await client.request({
-            path: '/not-found',
-            origin: url,
-            method: 'GET',
-        });
-        client.metrics.push(null);
+        await client.close();
         await stopServer(client);
     });
+
     await t.test('breaker metrics', async () => {
         await startServer();
         const client = new HttpClient({
@@ -396,6 +401,7 @@ await test('http-client: metrics', async (t) => {
             method: 'GET',
         });
         client.metrics.push(null);
+        await client.close();
         await stopServer(client);
     });
 });
