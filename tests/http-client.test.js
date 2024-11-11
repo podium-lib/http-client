@@ -20,7 +20,9 @@ function startServer() {
             }
             response.end();
         });
-        httpServer.listen(port, host, resolve);
+        httpServer.listen(port, host, () => {
+            resolve();
+        });
     });
 }
 
