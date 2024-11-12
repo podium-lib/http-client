@@ -338,19 +338,17 @@ await test('http-client: metrics', async (t) => {
             metrics.push(metric);
         });
         client.metrics.on('end', () => {
-            strictEqual(metrics.length, 4, JSON.stringify(metrics));
+            strictEqual(metrics.length, 3);
 
             strictEqual(metrics[0].name, 'http_client_breaker_events');
             strictEqual(metrics[0].type, 2);
             strictEqual(metrics[0].labels[0].value, 'open');
 
+            strictEqual(metrics[1].name, 'http_client_request_duration');
+
             strictEqual(metrics[2].name, 'http_client_breaker_events');
             strictEqual(metrics[2].type, 2);
             strictEqual(metrics[2].labels[0].value, 'close');
-
-            strictEqual(metrics[3].name, 'http_client_breaker_events');
-            strictEqual(metrics[3].type, 2);
-            strictEqual(metrics[3].labels[0].value, 'success');
         });
         try {
             // Make the circuit open

@@ -167,13 +167,18 @@ Closes the client and all open connections.
 
 The client expose a number of [@metrics/metric] to enabled developers to monitor its behaviour.
 
-| name                            | type          | description                                                                               |
-|---------------------------------|---------------|-------------------------------------------------------------------------------------------|
-| `http_client_breaker_events`    | `counter`     | Counters on events exposed by the circuit breaker library,<br/>see  [opossum] for details |
-| `http_client_request_error`     | `counter`     | Counters the number of requests returning an error.                                       |
-| `http_client_request_duration`  | `histogram`   | Times the duration of all http requests.                                                  |
+| name                            | type          | description                                         |
+|---------------------------------|---------------|-----------------------------------------------------|
+| `http_client_breaker_events`    | `counter`     | See [breaker metrics](#breaker-metrics)             |
+| `http_client_request_error`     | `counter`     | Counters the number of requests returning an error. |
+| `http_client_request_duration`  | `histogram`   | Times the duration of all http requests.            |
 
 See the [MetricsJS](https://metrics-js.github.io) project for more documentation on the individual metrics.
+
+#### Breaker metrics
+
+The client has metrics for the following events: `open`, `closed`, `rejected`.
+See  [opossum] for more details on these events.
 
 [@metrics/metric]: https://metrics-js.github.io/reference/metric/
 [abslog]: https://github.com/trygve-lie/abslog 'abslog'
