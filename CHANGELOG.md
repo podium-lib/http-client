@@ -1,3 +1,10 @@
+# [1.0.0-beta.8](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2024-11-12)
+
+
+### Bug Fixes
+
+* bump ([f4ccca2](https://github.com/podium-lib/http-client/commit/f4ccca2ca82a78f278f1fc8f828074bb19eacb17))
+
 # [1.0.0-beta.7](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2024-11-12)
 
 
