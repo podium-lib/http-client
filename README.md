@@ -12,8 +12,9 @@ Generic http client built on [undici] with a circuit breaker using [opossum], er
  - [Installing](#installation)
  - [Usage](#usage)
  - [API](#api)
+   - [Constructor](#constructor)
    - [Methods](#methods)
-   - [Metrics](#metrics)
+ - Expose [metrics](#metrics)
 
 ## Installation
 
@@ -25,6 +26,7 @@ npm install @podium/http-client
 
 ## Usage
 
+Here is how to instantiate the client to make a request for the configured resource.
 ```js
 import client from '@podium/http-client';
 const client = new HttpClient(options);
@@ -33,10 +35,14 @@ const response = await client.request({ path: '/', origin: 'https://host.domain'
 if (response.ok) {
     //
 }
+
+await client.close();
 ```
+Note that you have to call `.close` when the request is
 
 ### Aborting requests
 
+If for whatever reason you want to be able to manually abort a request, you can send in an `AbortController`.
 ```js
 import client from '@podium/http-client';
 const client = new HttpClient(options);
@@ -49,6 +55,7 @@ const response = await client.request({
 });
 // Abort the request.
 controller.abort();
+await client.close();
 ```
 
 ## API
@@ -57,7 +64,6 @@ controller.abort();
 
 ```js
 import client from '@podium/http-client';
-
 const client = new HttpClient(options);
 ```
 
@@ -67,8 +73,6 @@ const client = new HttpClient(options);
 |---------------------|--------------|------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------|
 | clientName          | `''`         | `string`   | no       | Client name                                                                                                                                |
 | connections         | `50`         | `number`   | no       | See [connections](#connections)                                                                                                            |
-| fallback            | `undefined`  | `function` | no       | Function to call when requests fail, see [fallback](#fallback)                                                                             |
-| followRedirects     | `false`      | `boolean`  | no       | Flag for whether to follow redirects or not, see [followRedirects](#followRedirects).                                                      |
 | keepAliveMaxTimeout | `undefined`  | `number`   | no       | See [keepAliveMaxTimeout](#keepAliveMaxTimeout)                                                                                            |
 | keepAliveTimeout    | `undefined`  | `number`   | no       | See [keepAliveTimeout](#keepAliveTimeout)                                                                                                  |
 | logger              | `undefined ` | `object`   | no       | A logger which conform to a log4j interface                                                                                                |
@@ -84,22 +88,6 @@ const client = new HttpClient(options);
 
 Property is sent to the underlying http library.
 See library docs on [connections](https://undici.nodejs.org/#/docs/api/Pool?id=parameter-pooloptions)
-
-##### fallback
-
-Optional function to run when a request fails.
-
-```js
-// TBA
-```
-
-##### followRedirects
-
-TODO!!!   decide what to do with the redirects stuff...
-
-By default, the library does not follow redirect.
-If set to true it will follow redirects according to `maxRedirections`.
-It will by default throw on reaching `throwOnMaxRedirects`
 
 
 ##### keepAliveMaxTimeout
@@ -120,10 +108,9 @@ Console is also supported for easy test / development.
 Example:
 
 ```js
-const layout = new Layout({
-    name: 'myLayout',
-    pathname: '/foo',
-    logger: console,
+import client from '@podium/http-client';
+const client = new HttpClient({
+    logger: abslog(/* your logging library of choice **/),
 });
 ```
 
@@ -158,33 +145,37 @@ If the client should throw on http 500 errors. If true, http 500 errors will cou
 
 Sends a request using the passed in options object.
 
-| name         | type            | description                                     |
-|--------------|-----------------|-------------------------------------------------|
-| headers      | `object`        | Object with key / value which are strings       |
-| method       | `string`        | HTTP method name                                |
-| origin       | `string \| URL` | Request origin, ex `https://server.domain:9090` |
-| path         | `string`        | URL path, ex `/foo`                             |
-| query        | `object`        | Object with key / value which are strings       |
-| redirectable | `boolean`       | If we should follow redirects or not.           |
-| signal       | `AbortSignal`   | Abort signal for canceling requests.            |
-| throwable    | `boolean`       | If we should throw on errors.                   |
+| name            | type            | description                                     |
+|-----------------|-----------------|-------------------------------------------------|
+| headers         | `object`        | Object with key / value which are strings       |
+| method          | `string`        | HTTP method name                                |
+| origin          | `string \| URL` | Request origin, ex `https://server.domain:9090` |
+| path            | `string`        | URL path, ex `/foo`                             |
+| query           | `object`        | Object with key / value which are strings       |
+| redirectable    | `boolean`       | If we should follow redirects or not.           |
+| maxRedirections | `number`        | Max number of redirects.                        |
+| signal          | `AbortSignal`   | Abort signal for canceling requests.            |
+| throwable       | `boolean`       | If we should throw on errors.                   |
 
 For a complete list of options, consult the [undici documentation](https://undici.nodejs.org/#/?id=undicirequesturl-options-promise).
 
 #### async close()
 
-Closes the client and it's connections.
+Closes the client and all open connections.
 
 ### Metrics
 
-The expose metrics on the circuit breaking behaviour.
+The client expose a number of [@metrics/metric] to enabled developers to monitor its behaviour.
 
-| name                         | type    | description                                                                               |
-|------------------------------|---------|-------------------------------------------------------------------------------------------|
-| `http_client_breaker_events` | counter | Counters on events exposed by the circuit breaker library,<br/>see  [opossum] for details |
+| name                            | type          | description                                                                               |
+|---------------------------------|---------------|-------------------------------------------------------------------------------------------|
+| `http_client_breaker_events`    | `counter`     | Counters on events exposed by the circuit breaker library,<br/>see  [opossum] for details |
+| `http_client_request_error`     | `counter`     | Counters the number of requests returning an error.                                       |
+| `http_client_request_duration`  | `histogram`   | Times the duration of all http requests.                                                  |
 
+See the [MetricsJS](https://metrics-js.github.io) project for more documentation on the individual metrics.
 
-[@metrics/metric]: https://github.com/metrics-js/metric '@metrics/metric'
+[@metrics/metric]: https://metrics-js.github.io/reference/metric/
 [abslog]: https://github.com/trygve-lie/abslog 'abslog'
 [undici]: https://undici.nodejs.org/
 [opossum]: https://github.com/nodeshift/opossum/
