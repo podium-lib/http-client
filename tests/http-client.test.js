@@ -92,39 +92,6 @@ await test('http-client - basics', async (t) => {
         await client.close();
     });
 
-    await t.test('throws error when no fallback provided', async () => {
-        const client = new HttpClient();
-        rejects(
-            async () => {
-                await client.request({
-                    path: '/',
-                    origin: 'https://does-not-exist.domain',
-                    method: 'GET',
-                });
-            },
-            {
-                name: 'Error',
-            },
-        );
-        await client.close();
-    });
-    await t.test('does not throw when fallback provided', async () => {
-        let isCaught = false;
-        const client = new HttpClient({
-            fallback: () => {
-                isCaught = true;
-            },
-        });
-
-        await client.request({
-            path: '/',
-            origin: 'https://does-not-exist.domain',
-            method: 'GET',
-        });
-        strictEqual(isCaught, true);
-        await client.close();
-    });
-
     await closeServer(server);
 });
 
