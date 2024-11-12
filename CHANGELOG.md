@@ -1,3 +1,10 @@
+# [1.0.0-beta.7](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2024-11-12)
+
+
+### Bug Fixes
+
+* making .request return the entire response ([97180e3](https://github.com/podium-lib/http-client/commit/97180e3fb8b135fcd0cc4810148701f48b9db1dd))
+
 # [1.0.0-beta.6](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2024-11-11)
 
 
