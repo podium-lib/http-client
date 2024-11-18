@@ -32,11 +32,11 @@
   },
   "homepage": "https://github.com/podium-lib/http-client#readme",
   "dependencies": {
-    "@metrics/client": "2.5.3",
+    "@metrics/client": "2.5.4",
     "abslog": "2.4.4",
     "http-errors": "2.0.0",
-    "opossum": "8.3.0",
-    "undici": "6.20.1"
+    "opossum": "8.3.1",
+    "undici": "6.21.0"
   },
   "devDependencies": {
     "@podium/eslint-config": "1.0.2",
