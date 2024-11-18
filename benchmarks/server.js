@@ -21,8 +21,8 @@ if (cluster.isPrimary) {
     for (let i = 0; i < workers; i++) {
         cluster.fork();
     }
+    console.log(`${workers} workers available`);
 } else {
-    console.log(port);
     const buf = Buffer.alloc(64 * 1024, '_');
     const server = createServer((req, res) => {
         setTimeout(function () {
@@ -33,4 +33,5 @@ if (cluster.isPrimary) {
         console.error(error);
     });
     server.keepAliveTimeout = 600e3;
+    console.log(` - worker ${process.pid} started`);
 }

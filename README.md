@@ -14,7 +14,8 @@ Generic http client built on [undici] with a circuit breaker using [opossum], er
  - [API](#api)
    - [Constructor](#constructor)
    - [Methods](#methods)
- - Expose [metrics](#metrics)
+ - Exposed [metrics](#metrics)
+ - [Benchmarks](./BENCHMARKS.md)
 
 ## Installation
 

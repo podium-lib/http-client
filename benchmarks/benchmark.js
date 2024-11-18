@@ -147,15 +147,7 @@ function printResults(results) {
                 alignment: 'right',
             },
         },
-        drawHorizontalLine: (index, size) => index > 0 && index < size,
-        border: {
-            bodyLeft: '│',
-            bodyRight: '│',
-            bodyJoin: '│',
-            joinLeft: '|',
-            joinRight: '|',
-            joinJoin: '|',
-        },
+        //drawHorizontalLine: (index, size) => index > 0 && index < size,
     });
 }
 
@@ -240,7 +232,26 @@ const experiments = {
         });
     },
 
-    async 'podium-http-client - request'() {
+    async 'podium-http-client'() {
+        makeParallelRequests((resolve) => {
+            httpClient
+                .request({
+                    origin: `http://localhost:${dest.port}`,
+                })
+                .then(({ body }) => {
+                    body.pipe(
+                        new Writable({
+                            write(chunk, encoding, callback) {
+                                callback();
+                            },
+                        }),
+                    ).on('finish', resolve);
+                });
+        }).catch(console.error);
+        return;
+    },
+
+    async 'podium-http-client'() {
         makeParallelRequests((resolve) => {
             httpClient
                 .request({
