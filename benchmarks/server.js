@@ -22,11 +22,15 @@ if (cluster.isPrimary) {
         cluster.fork();
     }
 } else {
+    console.log(port);
     const buf = Buffer.alloc(64 * 1024, '_');
     const server = createServer((req, res) => {
         setTimeout(function () {
             res.end(buf);
         }, timeout);
     }).listen(port);
+    server.on('error', (error) => {
+        console.error(error);
+    });
     server.keepAliveTimeout = 600e3;
 }

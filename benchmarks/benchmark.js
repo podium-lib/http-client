@@ -10,7 +10,7 @@ import { isMainThread } from 'node:worker_threads';
 import { Pool, Client, Agent, setGlobalDispatcher } from 'undici';
 
 import PodiumHttpClient from '../lib/http-client.js';
-const podium = new PodiumHttpClient();
+const httpClient = new PodiumHttpClient();
 
 const iterations = (parseInt(process.env.SAMPLES, 10) || 10) + 1;
 const errorThreshold = parseInt(process.env.ERROR_TRESHOLD, 10) || 3;
@@ -78,35 +78,6 @@ const dispatcher = new Class(httpBaseOptions.url, {
 
 setGlobalDispatcher(new Agent({ pipelining, connections }));
 
-// eslint-disable-next-line no-unused-vars
-class SimpleRequest {
-    constructor(resolve) {
-        this.dst = new Writable({
-            write(chunk, encoding, callback) {
-                callback();
-            },
-        }).on('finish', resolve);
-    }
-    // eslint-disable-next-line no-unused-vars
-    onConnect(abort) {}
-
-    onHeaders(statusCode, headers, resume) {
-        this.dst.on('drain', resume);
-    }
-
-    onData(chunk) {
-        return this.dst.write(chunk);
-    }
-
-    onComplete() {
-        this.dst.end();
-    }
-
-    onError(err) {
-        throw err;
-    }
-}
-
 function makeParallelRequests(cb) {
     return Promise.all(
         Array.from(Array(parallelRequests)).map(() => new Promise(cb)),
@@ -143,7 +114,11 @@ function printResults(results) {
             ];
         });
 
-    console.log(results);
+    for (const key of Object.keys(results)) {
+        if (!results[key].success) {
+            console.error(`${key} errored: ${results[key].error}`);
+        }
+    }
 
     // Add the header row
     rows.unshift([
@@ -196,7 +171,7 @@ const experiments = {
                     }),
                 ).on('finish', resolve);
             });
-        }).catch(console.log);
+        }).catch(console.error);
     },
 
     'http - keepalive'() {
@@ -210,12 +185,12 @@ const experiments = {
                     }),
                 ).on('finish', resolve);
             });
-        }).catch(console.log);
+        }).catch(console.error);
     },
 
     fetch() {
         return makeParallelRequests((resolve) => {
-            fetch('http://localhost:3042')
+            fetch(`http://localhost:${dest.port}`)
                 .then((res) => {
                     res.body.pipeTo(
                         new WritableStream({
@@ -226,7 +201,7 @@ const experiments = {
                         }),
                     );
                 })
-                .catch(console.log);
+                .catch(console.error);
         });
     },
 
@@ -245,7 +220,7 @@ const experiments = {
                     }),
                 )
                 .on('finish', resolve);
-        }).catch(console.log);
+        }).catch(console.error);
     },
 
     'undici - request'() {
@@ -261,28 +236,32 @@ const experiments = {
                         }),
                     ).on('finish', resolve);
                 })
-                .catch(console.log);
+                .catch(console.error);
         });
     },
 
-    'podium-http - request'() {
-        return makeParallelRequests((resolve) => {
-            podium.request('http://localhost:3042').then(({ body }) => {
-                body.pipe(
-                    new Writable({
-                        write(chunk, encoding, callback) {
-                            callback();
-                        },
-                    }),
-                ).on('finish', resolve);
-            });
-        }).catch(console.log);
+    async 'podium-http-client - request'() {
+        makeParallelRequests((resolve) => {
+            httpClient
+                .request({
+                    origin: `http://localhost:${dest.port}`,
+                })
+                .then(({ body }) => {
+                    body.pipe(
+                        new Writable({
+                            write(chunk, encoding, callback) {
+                                callback();
+                            },
+                        }),
+                    ).on('finish', resolve);
+                });
+        }).catch(console.error);
+        return;
     },
 };
 
 async function main() {
     const { cronometro } = await import('cronometro');
-
     cronometro(
         experiments,
         {
@@ -306,6 +285,8 @@ let foolMain;
 if (isMainThread) {
     // console.log('I am in main thread');
     main();
+    await httpClient.close();
+
     //return;
 } else {
     foolMain = main;
