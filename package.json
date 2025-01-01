@@ -43,7 +43,7 @@
     "@podium/semantic-release-config": "2.0.0",
     "@podium/typescript-config": "1.0.0",
     "@types/node": "20.17.9",
-    "concurrently": "9.1.0",
+    "concurrently": "9.1.2",
     "cronometro": "4.0.0",
     "eslint": "9.16.0",
     "prettier": "3.4.1",
