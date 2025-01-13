@@ -1,3 +1,10 @@
+# [1.0.0-beta.9](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.8...v1.0.0-beta.9) (2025-01-13)
+
+
+### Bug Fixes
+
+* upgrading to undici v7 ([8c67e3d](https://github.com/podium-lib/http-client/commit/8c67e3dc67db3a7085898aa287c01b5e00f6e8f2))
+
 # [1.0.0-beta.8](https://github.com/podium-lib/http-client/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2024-11-12)
 
 
