@@ -35,26 +35,26 @@
     },
     "homepage": "https://github.com/podium-lib/http-client#readme",
     "dependencies": {
-        "@metrics/client": "2.5.3",
+        "@metrics/client": "2.5.4",
         "abslog": "2.4.4",
         "http-errors": "2.0.0",
-        "opossum": "8.3.0",
-        "undici": "6.20.1"
+        "opossum": "8.4.0",
+        "undici": "7.2.1"
     },
     "devDependencies": {
-        "@podium/eslint-config": "1.0.2",
+        "@podium/eslint-config": "1.0.5",
         "@podium/semantic-release-config": "2.0.0",
         "@podium/typescript-config": "1.0.0",
-        "@types/node": "20.17.3",
+        "@types/node": "22.10.5",
         "@types/opossum": "8.1.8",
-        "@types/readable-stream": "4.0.15",
-        "concurrently": "9.0.1",
-        "cronometro": "4.0.0",
-        "eslint": "9.13.0",
-        "npm-run-all2": "6.2.6",
-        "prettier": "3.3.3",
-        "table": "6.8.2",
-        "typescript": "5.6.3",
-        "wait-on": "8.0.1"
+        "@types/readable-stream": "4.0.18",
+        "concurrently": "9.1.2",
+        "cronometro": "4.0.2",
+        "eslint": "9.18.0",
+        "npm-run-all2": "7.0.2",
+        "prettier": "3.4.2",
+        "table": "6.9.0",
+        "typescript": "5.7.3",
+        "wait-on": "8.0.2"
     }
 }

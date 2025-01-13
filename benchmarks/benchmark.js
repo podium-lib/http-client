@@ -250,25 +250,6 @@ const experiments = {
         }).catch(console.error);
         return;
     },
-
-    async 'podium-http-client'() {
-        makeParallelRequests((resolve) => {
-            httpClient
-                .request({
-                    origin: `http://localhost:${dest.port}`,
-                })
-                .then(({ body }) => {
-                    body.pipe(
-                        new Writable({
-                            write(chunk, encoding, callback) {
-                                callback();
-                            },
-                        }),
-                    ).on('finish', resolve);
-                });
-        }).catch(console.error);
-        return;
-    },
 };
 
 async function main() {
