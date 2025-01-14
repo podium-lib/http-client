@@ -1,11 +1,14 @@
 # @podium/http-client
 
-⚠️ This project is still work in progress, should not be used for anything just yet.
-
-Generic http client built on [undici] with a circuit breaker using [opossum], error handling and metrics out of the box.
+⚠️ This project is in beta, use at your own risk. Changes might occur.
 
 [![GitHub Actions status](https://github.com/podium-lib/http-client/workflows/Run%20Lint%20and%20Tests/badge.svg)](https://github.com/podium-lib/layout/actions?query=workflow%3A%22Run+Lint+and+Tests%22)
 [![Known Vulnerabilities](https://snyk.io/test/github/podium-lib/http-client/badge.svg)](https://snyk.io/test/github/podium-lib/http-client)
+
+`@podium/http-client` is a general purpost http client built on [undici] with a circuit breaker using [opossum], error handling and metrics out of the box.
+It is used in [@podium/client] and provides the formentioned capabilities to the [@podium/layout] module.
+
+There is nothing podium specific in the client, which means that you can use it anywhere you do a `fetch` or use some other library to get or send content over HTTP. With the circuit breaking capability, it is ideal for consuming services in a distrubuted system.
 
 **Table of contents:**
 
@@ -182,6 +185,8 @@ The client has metrics for the following events: `open`, `closed`, `rejected`.
 See  [opossum] for more details on these events.
 
 [@metrics/metric]: https://metrics-js.github.io/reference/metric/
+[@podium/client]: https://github.com/podium-lib/client
+[@podium/layout]: https://github.com/podium-lib/layout
 [abslog]: https://github.com/trygve-lie/abslog 'abslog'
 [undici]: https://undici.nodejs.org/
 [opossum]: https://github.com/nodeshift/opossum/
