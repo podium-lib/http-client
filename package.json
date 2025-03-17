@@ -36,7 +36,7 @@
     "abslog": "2.4.4",
     "http-errors": "2.0.0",
     "opossum": "8.4.0",
-    "undici": "6.21.1"
+    "undici": "6.21.2"
   },
   "devDependencies": {
     "@podium/eslint-config": "1.0.5",
