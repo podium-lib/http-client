@@ -50,6 +50,6 @@
     "npm-run-all2": "6.2.6",
     "table": "6.8.2",
     "typescript": "5.7.2",
-    "wait-on": "8.0.1"
+    "wait-on": "8.0.3"
   }
 }
