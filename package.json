@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/podium-lib/http-client#readme",
   "dependencies": {
-    "@metrics/client": "2.5.4",
+    "@metrics/client": "2.5.5",
     "abslog": "2.4.4",
     "http-errors": "2.0.0",
     "opossum": "8.5.0",
