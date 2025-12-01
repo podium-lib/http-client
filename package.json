@@ -42,7 +42,7 @@
     "@podium/eslint-config": "1.0.19",
     "@podium/semantic-release-config": "2.0.6",
     "@podium/typescript-config": "1.0.0",
-    "@types/node": "20.19.24",
+    "@types/node": "20.19.25",
     "concurrently": "9.1.2",
     "cronometro": "4.0.3",
     "eslint": "9.39.0",
