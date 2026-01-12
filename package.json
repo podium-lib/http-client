@@ -35,7 +35,7 @@
     "@metrics/client": "2.5.5",
     "abslog": "2.4.4",
     "http-errors": "2.0.1",
-    "opossum": "8.5.0",
+    "opossum": "9.0.0",
     "undici": "6.23.0"
   },
   "devDependencies": {
